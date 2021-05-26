@@ -1,0 +1,24 @@
+version: '2'
+
+services:
+  logdna_fluentd:
+    environment:
+      - LOGDNA_KEY=____change_me____
+      - LOGDNA_APP=fluentd
+      - LOGDNA_TAGS=fluentd
+      - FLUENTD_HOSTNAME=fluentd
+      - SYSLOG_PORT=5140
+    build: .
+    container_name: logdna-docker-fluent-logger
+    ports:
+      - 5140:5140
+    volumes:
+      - ./fluent.conf:/fluentd/etc/fluent.conf
+    restart: "no"
+    #unless-stopped
+    networks:
+      - fluent_net
+
+networks:
+  fluent_net:
+    driver: bridge

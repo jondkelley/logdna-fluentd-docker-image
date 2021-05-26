@@ -87,6 +87,7 @@ RUN refreshenv \
 <% end %>
 && gem install json -v 2.2.0 \
 && gem install fluentd -v <%= fluentd_ver %> \
+&& gem install fluent-plugin-logdna -v 0.4.0 \
 && gem install win32-service -v 2.1.6 \
 && gem install win32-ipc -v 0.7.0 \
 && gem install win32-event -v 0.6.3 \
@@ -131,6 +132,7 @@ RUN apt-get update \
  && gem install ext_monitor -v 0.1.2 \
 <% end %>
  && gem install fluentd -v <%= fluentd_ver %> \
+ && gem install fluent-plugin-logdna -v 0.4.0 \
 <% if is_alpine %>
  && gem install bigdecimal -v 1.4.4 \
  && apk del .build-deps \

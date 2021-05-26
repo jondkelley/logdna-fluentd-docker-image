@@ -23,6 +23,7 @@ RUN apt-get update \
  && gem install async-http -v 0.54.0 \
  && gem install ext_monitor -v 0.1.2 \
  && gem install fluentd -v 1.12.3 \
+ && gem install fluent-plugin-logdna -v 0.4.0 \
  && dpkgArch="$(dpkg --print-architecture | awk -F- '{ print $NF }')" \
  && wget -O /usr/local/bin/tini "https://github.com/krallin/tini/releases/download/v$TINI_VERSION/tini-$dpkgArch" \
  && wget -O /usr/local/bin/tini.asc "https://github.com/krallin/tini/releases/download/v$TINI_VERSION/tini-$dpkgArch.asc" \

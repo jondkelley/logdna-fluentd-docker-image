@@ -34,6 +34,7 @@ ALL_IMAGES := $(X86_IMAGES) $(ARM_IMAGES) $(ARM64_IMAGES) $(WINDOWS_IMAGES)
 
 # Default is first image from ALL_IMAGES list.
 DOCKERFILE ?= $(word 1,$(subst :, ,$(word 1,$(ALL_IMAGES))))
+DOCKERFILE ?= $(word 1,$(subst :, ,$(word 1,$(ALL_IMAGES))))
 VERSION ?=  $(word 1,$(subst $(comma), ,\
                      $(word 2,$(subst :, ,$(word 1,$(ALL_IMAGES))))))
 TAGS ?= $(word 2,$(subst :, ,$(word 1,$(ALL_IMAGES))))
@@ -118,7 +119,7 @@ release-all:
 # Usage:
 #	make src [DOCKERFILE=] [VERSION=] [TAGS=t1,t2,...]
 
-src: dockerfile fluent.conf entrypoint.sh post-push-hook post-checkout-hook
+src: dockerfile dockercompose fluent.conf entrypoint.sh post-push-hook post-checkout-hook
 
 
 
@@ -131,6 +132,7 @@ src-all:
 	(set -e ; $(foreach img,$(ALL_IMAGES), \
 		make src \
 			DOCKERFILE=$(word 1,$(subst :, ,$(img))) \
+			DOCKERCOMPOSEFILE=$(word 1,$(subst :, ,$(img))) \
 			VERSION=$(word 1,$(subst $(comma), ,\
 			                 $(word 2,$(subst :, ,$(img))))) \
 			TAGS=$(word 2,$(subst :, ,$(img))) ; \
@@ -162,6 +164,35 @@ dockerfile-all:
 	(set -e ; $(foreach img,$(ALL_IMAGES), \
 		make dockerfile \
 			DOCKERFILE=$(word 1,$(subst :, ,$(img))) \
+			VERSION=$(word 1,$(subst $(comma), ,\
+			                 $(word 2,$(subst :, ,$(img))))) ; \
+	))
+
+
+# Generate docker-compose.yml from template.
+#
+# Usage:
+#	make dockercompose [DOCKERCOMPOSEFILE=] [VERSION=]
+
+dockercompose:
+	mkdir -p $(DOCKERCOMPOSEFILE)
+	docker run --rm -i -v $(PWD)/docker-compose.template.sample:/docker-compose.yml.erb:ro \
+		ruby:alpine erb -U -T 1 \
+			dockercompose='$(DOCKERCOMPOSEFILE)' \
+			version='$(VERSION)' \
+		/docker-compose.yml.erb > $(DOCKERCOMPOSEFILE)/docker-compose.yml
+
+
+
+# Generate docker-compose.yml from template for all supported Docker images.
+#
+# Usage:
+#	make dockercompose-all
+
+dockercompose-all:
+	(set -e ; $(foreach img,$(ALL_IMAGES), \
+		make dockercompose \
+			DOCKERCOMPOSEFILE=$(word 1,$(subst :, ,$(img))) \
 			VERSION=$(word 1,$(subst $(comma), ,\
 			                 $(word 2,$(subst :, ,$(img))))) ; \
 	))
@@ -354,6 +385,7 @@ endif
         release release-all \
         src src-all \
         dockerfile dockerfile-all \
+        dockercompose dockercompose-all \
         fluent.conf fluent.conf-all \
         post-push-hook post-push-hook-all \
 		post-checkout-hook post-checkout-hook-all \
